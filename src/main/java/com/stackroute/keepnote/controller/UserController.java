@@ -57,7 +57,7 @@ public class UserController {
 	 * method
 	 */
 	@PostMapping("/user/register")
-	public ResponseEntity<?> addNote(@RequestBody User user) {
+	public ResponseEntity<?> registerUser(@RequestBody User user) {
 		try {
 			userService.registerUser(user);
 			return new ResponseEntity<User>(user, HttpStatus.CREATED);
@@ -147,7 +147,7 @@ public class UserController {
 
 			}
 		} else {
-			return new ResponseEntity<User>(HttpStatus.UNAUTHORIZED);
+			return new ResponseEntity<String>("not logged in",HttpStatus.UNAUTHORIZED);
 		}
 	}
 
