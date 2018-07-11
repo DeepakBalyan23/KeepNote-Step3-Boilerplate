@@ -2,12 +2,17 @@ package com.stackroute.keepnote.dao;
 
 import java.util.List;
 
+import javax.persistence.Query;
 import javax.transaction.Transactional;
 
+import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.stackroute.keepnote.exception.CategoryNotFoundException;
 import com.stackroute.keepnote.exception.NoteNotFoundException;
+import com.stackroute.keepnote.model.Category;
 import com.stackroute.keepnote.model.Note;
 
 /*
@@ -27,9 +32,11 @@ public class NoteDAOImpl implements NoteDAO {
 	 * Autowiring should be implemented for the SessionFactory.(Use
 	 * constructor-based autowiring.
 	 */
-
+	@Autowired
+	SessionFactory sessionFactory;
+	
 	public NoteDAOImpl(SessionFactory sessionFactory) {
-
+		this.sessionFactory =sessionFactory;
 	}
 
 	/*
@@ -37,8 +44,9 @@ public class NoteDAOImpl implements NoteDAO {
 	 */
 	
 	public boolean createNote(Note note) {
-		return false;
-
+		sessionFactory.getCurrentSession().save(note);
+		sessionFactory.getCurrentSession().flush();
+		return true;
 	}
 
 	/*
@@ -46,16 +54,25 @@ public class NoteDAOImpl implements NoteDAO {
 	 */
 	
 	public boolean deleteNote(int noteId) {
-		return false;
+		try {
+			sessionFactory.getCurrentSession().delete(getNoteById(noteId));
+			sessionFactory.getCurrentSession().flush();
+			return true;
+		} catch (NoteNotFoundException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	/*
 	 * Retrieve details of all notes by userId
 	 */
 	
+	@SuppressWarnings("unchecked")
 	public List<Note> getAllNotesByUserId(String userId) {
-		return null;
-
+		String hql = "FROM Note where createdBy= :userId";
+		Query query = sessionFactory.openSession().createQuery(hql).setParameter("userId", userId);
+		return query.getResultList();
 	}
 
 	/*
@@ -63,8 +80,11 @@ public class NoteDAOImpl implements NoteDAO {
 	 */
 	
 	public Note getNoteById(int noteId) throws NoteNotFoundException {
-		return null;
-
+		Note note = (Note)sessionFactory.getCurrentSession().get(Note.class, noteId);
+		if(note==null)
+			throw new NoteNotFoundException("Note not found");
+		sessionFactory.getCurrentSession().flush();
+		return note;
 	}
 
 	/*
@@ -72,8 +92,19 @@ public class NoteDAOImpl implements NoteDAO {
 	 */
 
 	public boolean UpdateNote(Note note) {
-		return false;
-
+		try {
+			if (getNoteById(note.getNoteId()) == null) {
+				return false;
+			} else {
+				sessionFactory.getCurrentSession().clear();
+				sessionFactory.getCurrentSession().update(note);
+				sessionFactory.getCurrentSession().flush();
+				return true;
+			}
+		} catch (NoteNotFoundException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 }

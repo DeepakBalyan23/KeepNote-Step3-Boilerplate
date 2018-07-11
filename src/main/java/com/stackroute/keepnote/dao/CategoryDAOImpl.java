@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import com.stackroute.keepnote.exception.CategoryNotFoundException;
 import com.stackroute.keepnote.model.Category;
+import com.stackroute.keepnote.model.User;
 
 /*
  * This class is implementing the UserDAO interface. This class has to be annotated with 
@@ -83,9 +84,11 @@ public class CategoryDAOImpl implements CategoryDAO {
 	 */
 
 	public Category getCategoryById(int categoryId) throws CategoryNotFoundException {
-		Category note = (Category)sessionFactory.getCurrentSession().get(Category.class, categoryId);
+		Category category = (Category)sessionFactory.getCurrentSession().get(Category.class, categoryId);
+		if(category==null)
+			throw new CategoryNotFoundException("Category not found");
 		sessionFactory.getCurrentSession().flush();
-		return note;
+		return category;
 	}
 
 	/*
@@ -93,8 +96,8 @@ public class CategoryDAOImpl implements CategoryDAO {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<Category> getAllCategoryByUserId(String userId) {
-		String hql = "FROM Category category ORDER BY category.createdAt DESC";
-		Query query = sessionFactory.openSession().createQuery(hql);
+		String hql = "FROM Category where categoryCreatedBy= :userId";
+		Query query = sessionFactory.openSession().createQuery(hql).setParameter("userId", userId);
 		return query.getResultList();
 	}
 

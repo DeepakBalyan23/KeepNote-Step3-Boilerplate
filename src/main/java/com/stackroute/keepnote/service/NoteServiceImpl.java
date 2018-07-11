@@ -1,9 +1,16 @@
 package com.stackroute.keepnote.service;
 
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.stackroute.keepnote.dao.CategoryDAO;
+import com.stackroute.keepnote.dao.NoteDAO;
+import com.stackroute.keepnote.dao.ReminderDAO;
 import com.stackroute.keepnote.exception.CategoryNotFoundException;
 import com.stackroute.keepnote.exception.NoteNotFoundException;
 import com.stackroute.keepnote.exception.ReminderNotFoundException;
+import com.stackroute.keepnote.model.Category;
 import com.stackroute.keepnote.model.Note;
 
 /*
@@ -26,16 +33,29 @@ public class NoteServiceImpl implements NoteService {
 	/*
 	 * This method should be used to save a new note.
 	 */
-
+	@Autowired
+	NoteDAO noteDAO;
+	
+	@Autowired
+	ReminderDAO reminderDAO;
+	
+	@Autowired
+	CategoryDAO categoryDAO;
+	
 	public boolean createNote(Note note) throws ReminderNotFoundException, CategoryNotFoundException {
-		return false;
+		if(reminderDAO.getReminderById(note.getReminder().getReminderId())==null)
+			throw new ReminderNotFoundException("Reminder not found");
+		else if(categoryDAO.getCategoryById(note.getCategory().getCategoryId())==null)
+			throw new ReminderNotFoundException("Category not found");
+		else
+			return noteDAO.createNote(note);
 
 	}
 
 	/* This method should be used to delete an existing note. */
 
 	public boolean deleteNote(int noteId) {
-		return false;
+		return noteDAO.deleteNote(noteId);
 
 	}
 	/*
@@ -43,7 +63,7 @@ public class NoteServiceImpl implements NoteService {
 	 */
 
 	public List<Note> getAllNotesByUserId(String userId) {
-		return null;
+		return noteDAO.getAllNotesByUserId(userId);
 
 	}
 
@@ -51,8 +71,11 @@ public class NoteServiceImpl implements NoteService {
 	 * This method should be used to get a note by noteId.
 	 */
 	public Note getNoteById(int noteId) throws NoteNotFoundException {
-		return null;
-
+		Note note = (Note)noteDAO.getNoteById(noteId);
+		if(note==null) {
+			throw new NoteNotFoundException("Note not found in service");
+		}
+		return note;
 	}
 
 	/*
@@ -61,7 +84,12 @@ public class NoteServiceImpl implements NoteService {
 
 	public Note updateNote(Note note, int id)
 			throws ReminderNotFoundException, NoteNotFoundException, CategoryNotFoundException {
-		return note;
+		noteDAO.UpdateNote(note);
+		Note note1 = (Note)noteDAO.getNoteById(id);
+		if(note1==null) {
+			throw new NoteNotFoundException("Note not found in service");
+		}
+		return note1;
 
 	}
 

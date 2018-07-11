@@ -2,12 +2,16 @@ package com.stackroute.keepnote.dao;
 
 import java.util.List;
 
+import javax.persistence.Query;
 import javax.transaction.Transactional;
 
 import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.stackroute.keepnote.exception.NoteNotFoundException;
 import com.stackroute.keepnote.exception.ReminderNotFoundException;
+import com.stackroute.keepnote.model.Note;
 import com.stackroute.keepnote.model.Reminder;
 
 /*
@@ -27,9 +31,11 @@ public class ReminderDAOImpl implements ReminderDAO {
 	 * Autowiring should be implemented for the SessionFactory.(Use
 	 * constructor-based autowiring.
 	 */
+	@Autowired
+	SessionFactory sessionFactory;
 
 	public ReminderDAOImpl(SessionFactory sessionFactory) {
-
+		this.sessionFactory =sessionFactory;
 	}
 
 	/*
@@ -37,8 +43,9 @@ public class ReminderDAOImpl implements ReminderDAO {
 	 */
 
 	public boolean createReminder(Reminder reminder) {
-		return false;
-
+		sessionFactory.getCurrentSession().save(reminder);
+		sessionFactory.getCurrentSession().flush();
+		return true;
 	}
 	
 	/*
@@ -46,8 +53,19 @@ public class ReminderDAOImpl implements ReminderDAO {
 	 */
 
 	public boolean updateReminder(Reminder reminder) {
-		return false;
-
+		try {
+			if (getReminderById(reminder.getReminderId()) == null) {
+				return false;
+			} else {
+				sessionFactory.getCurrentSession().clear();
+				sessionFactory.getCurrentSession().update(reminder);
+				sessionFactory.getCurrentSession().flush();
+				return true;
+			}
+		} catch (ReminderNotFoundException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	/*
@@ -55,8 +73,14 @@ public class ReminderDAOImpl implements ReminderDAO {
 	 */
 	
 	public boolean deleteReminder(int reminderId) {
-		return false;
-
+		try {
+			sessionFactory.getCurrentSession().delete(getReminderById(reminderId));
+			sessionFactory.getCurrentSession().flush();
+			return true;
+		} catch (ReminderNotFoundException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	/*
@@ -64,17 +88,22 @@ public class ReminderDAOImpl implements ReminderDAO {
 	 */
 	
 	public Reminder getReminderById(int reminderId) throws ReminderNotFoundException {
-		return null;
-
+		Reminder reminder = (Reminder)sessionFactory.getCurrentSession().get(Reminder.class, reminderId);
+		if(reminder==null)
+			throw new ReminderNotFoundException("Note not found");
+		sessionFactory.getCurrentSession().flush();
+		return reminder;
 	}
 
 	/*
 	 * Retrieve details of all reminders by userId
 	 */
 	
+	@SuppressWarnings("unchecked")
 	public List<Reminder> getAllReminderByUserId(String userId) {
-		return null;
-
+		String hql = "FROM Reminder where reminderCreatedBy= :userId";
+		Query query = sessionFactory.openSession().createQuery(hql).setParameter("userId", userId);
+		return query.getResultList();
 	}
 
 }
