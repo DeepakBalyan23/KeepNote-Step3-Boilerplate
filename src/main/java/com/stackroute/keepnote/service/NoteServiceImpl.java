@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.stackroute.keepnote.dao.CategoryDAO;
 import com.stackroute.keepnote.dao.NoteDAO;
@@ -24,6 +25,7 @@ import com.stackroute.keepnote.model.Reminder;
 * better. Additionally, tool support and additional behavior might rely on it in the 
 * future.
 * */
+@Service
 public class NoteServiceImpl implements NoteService {
 
 	/*

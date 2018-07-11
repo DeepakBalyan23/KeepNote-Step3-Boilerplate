@@ -1,6 +1,7 @@
 package com.stackroute.keepnote.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.stackroute.keepnote.dao.UserDAO;
 import com.stackroute.keepnote.exception.UserAlreadyExistException;
@@ -16,7 +17,7 @@ import com.stackroute.keepnote.model.User;
 * better. Additionally, tool support and additional behavior might rely on it in the 
 * future.
 * */
-
+@Service
 public class UserServiceImpl implements UserService {
 
 	/*
@@ -29,7 +30,11 @@ public class UserServiceImpl implements UserService {
 	 * This method should be used to save a new user.
 	 */
 	@Autowired
-	UserDAO userDAO;
+	private UserDAO userDAO;
+	
+	public UserServiceImpl(UserDAO userDAO) {
+		this.userDAO = userDAO;
+	}
 	
 	public boolean registerUser(User user) throws UserAlreadyExistException {
 		if(userDAO.getUserById(user.getUserId())!=null)
