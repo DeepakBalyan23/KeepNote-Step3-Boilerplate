@@ -1,5 +1,6 @@
 package com.stackroute.keepnote.service;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import com.stackroute.keepnote.exception.NoteNotFoundException;
 import com.stackroute.keepnote.exception.ReminderNotFoundException;
 import com.stackroute.keepnote.model.Category;
 import com.stackroute.keepnote.model.Note;
+import com.stackroute.keepnote.model.Reminder;
 
 /*
 * Service classes are used here to implement additional business logic/validation 
@@ -43,12 +45,17 @@ public class NoteServiceImpl implements NoteService {
 	CategoryDAO categoryDAO;
 	
 	public boolean createNote(Note note) throws ReminderNotFoundException, CategoryNotFoundException {
-		if(reminderDAO.getReminderById(note.getReminder().getReminderId())==null)
-			throw new ReminderNotFoundException("Reminder not found");
-		else if(categoryDAO.getCategoryById(note.getCategory().getCategoryId())==null)
-			throw new ReminderNotFoundException("Category not found");
-		else
-			return noteDAO.createNote(note);
+		
+		Reminder reminder = note.getReminder();
+		Category category = note.getCategory();
+		if(category!=null) {
+			categoryDAO.getCategoryById(category.getCategoryId());
+		}
+		
+		if(reminder!=null) {
+			reminderDAO.getReminderById(reminder.getReminderId());
+		}
+		return noteDAO.createNote(note);
 
 	}
 
@@ -84,6 +91,15 @@ public class NoteServiceImpl implements NoteService {
 
 	public Note updateNote(Note note, int id)
 			throws ReminderNotFoundException, NoteNotFoundException, CategoryNotFoundException {
+		Reminder reminder = note.getReminder();
+		Category category = note.getCategory();
+		if(category!=null) {
+			categoryDAO.getCategoryById(category.getCategoryId());
+		}
+		
+		if(reminder!=null) {
+			reminderDAO.getReminderById(reminder.getReminderId());
+		}
 		noteDAO.UpdateNote(note);
 		Note note1 = (Note)noteDAO.getNoteById(id);
 		if(note1==null) {
