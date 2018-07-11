@@ -1,7 +1,12 @@
 package com.stackroute.keepnote.dao;
 
 import java.util.List;
+
+import javax.transaction.Transactional;
+
 import org.hibernate.SessionFactory;
+import org.springframework.stereotype.Repository;
+
 import com.stackroute.keepnote.exception.ReminderNotFoundException;
 import com.stackroute.keepnote.model.Reminder;
 
@@ -14,7 +19,8 @@ import com.stackroute.keepnote.model.Reminder;
  * 					transaction. The database transaction happens inside the scope of a persistence 
  * 					context.  
  * */
-
+@Repository
+@Transactional
 public class ReminderDAOImpl implements ReminderDAO {
 	
 	/*
